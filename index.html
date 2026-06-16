@@ -286,13 +286,15 @@ td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
       <div class="form-group">
         <label>Face recognition condition</label>
         <select id="inp-face" style="width:100%;">
-          <option>Recognized</option>
-          <option>Unrecognized</option>
+          <option value="None">None</option>
+          <option value="Recognized">Recognized</option>
+          <option value="Unrecognized">Unrecognized</option>
         </select>
       </div>
       <div class="form-group">
         <label>Passkey</label>
         <select id="inp-passkey" style="width:100%;">
+          <option value="None">None</option>
           <option value="Accepted">Accepted</option>
           <option value="Rejected">Rejected</option>
         </select>
@@ -532,7 +534,9 @@ All selected data will be permanently deleted.
       </div>
       <div class="reset-option-action">
         <select id="reset-face" style="min-width:130px;">
-          <option>Recognized</option><option>Unrecognized</option>
+          <option>None</option>
+          <option>Recognized</option>
+          <option>Unrecognized</option>
         </select>
         <button class="btn-reset" onclick="resetByFace()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset</button>
       </div>
@@ -545,6 +549,7 @@ All selected data will be permanently deleted.
       </div>
       <div class="reset-option-action">
         <select id="reset-passkey" style="min-width:130px;">
+          <option value="None">None</option>
           <option value="Accepted">Accepted</option>
           <option value="Rejected">Rejected</option>
         </select>
@@ -715,7 +720,7 @@ function renderTable() {
 
 function destroyChart(c) { if (c) { try { c.destroy(); } catch(e){} } }
 
-const FACE_CONDITIONS = ['Recognized','Unrecognized'];
+const FACE_CONDITIONS = ['None','Recognized','Unrecognized'];
 
 function renderCharts() {
   const m = getMetrics();
@@ -840,7 +845,7 @@ cFace = new Chart(document.getElementById('chart-face'), {
     }
 });
 
-  const pkLabels = ['Accepted','Rejected'];
+  const pkLabels = ['None','Accepted','Rejected'];
 // ... dalam fungsi renderCharts()
 destroyChart(cPasskey);
 cPasskey = new Chart(document.getElementById('chart-passkey'), {
@@ -928,7 +933,7 @@ condTable(
     'face-cond-tbody', 'Condition'
   );
   condTable(
-    ['Accepted','Rejected'].map(c => [c, records.filter(r=>r.passkey===c).length, records.filter(r=>r.passkey===c&&(r.cls==='TP'||r.cls==='TN')).length]),
+    ['None','Accepted','Rejected'].map(c => [c, records.filter(r=>r.passkey===c).length, records.filter(r=>r.passkey===c&&(r.cls==='TP'||r.cls==='TN')).length]),
     'passkey-tbody', 'Passkey'
   );
 }
