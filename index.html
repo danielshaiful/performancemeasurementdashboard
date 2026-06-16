@@ -156,6 +156,101 @@ td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
     grid-template-columns: 1fr 1fr;
     gap: 10px;
   }
+
+.metric-good{
+  color:#16a34a;
+}
+
+.metric-warn{
+  color:#d97706;
+}
+
+.metric-bad{
+  color:#dc2626;
+}
+
+.b-good{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.b-fair{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.b-poor{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.b-na{
+  background:#e2e8f0;
+  color:#475569;
+}
+
+.b-accepted{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.b-rejected{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.b-genuine{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+.b-impostor{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.b-tp{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.b-fn{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.b-fp{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.b-tn{
+  background:#dbeafe;
+  color:#1d4ed8;
+}
+
+.btn-small{
+  border:none;
+  padding:6px 10px;
+  border-radius:4px;
+  cursor:pointer;
+  background:#fee2e2;
+  color:#dc2626;
+}
+
+.btn-small:hover{
+  background:#fecaca;
+}
+
+.hint-box{
+  margin-top:10px;
+  padding:10px;
+  background:#eff6ff;
+  border:1px solid #bfdbfe;
+  border-radius:6px;
+  color:#1e40af;
+  font-size:0.9rem;
+}
 </style>
 
 <div style="padding:1rem 0;">
@@ -179,6 +274,15 @@ td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
       <div class="form-group">
         <label>User</label>
         <input type="text" id="inp-user" placeholder="e.g. Daniel Shaiful" style="width:100%;">
+      </div>
+      <div class="form-group">
+      <label>Country Location</label>
+        <select id="inp-country" style="width:100%;">
+          <option>Malaysia</option>
+          <option>Singapore</option>
+          <option>Indonesia</option>
+          <option>Thailand</option>
+        </select>
       </div>
       <div class="form-group">
         <label>Face recognition condition</label>
@@ -213,7 +317,6 @@ td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
     <div class="btn-row">
       <button class="btn-add" onclick="addRecord()"><i class="ti ti-plus" aria-hidden="true"></i> Add record</button>
       <button class="btn-reset" onclick="showTab('reset',document.querySelectorAll('.tab')[4])"><i class="ti ti-refresh" aria-hidden="true"></i> Reset options</button>
-</button>
     </div>
   </div>
 
@@ -273,12 +376,12 @@ td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
       <table>
         <thead>
           <tr>
-            <th>No.</th><th>User</th><th>Face condition</th><th>Passkey</th>
+            <th>No.</th><th>User</th><th>Country Location</th><th>Face condition</th><th>Passkey</th>
             <th>Attempt type</th><th>System result</th><th>Class</th><th>Delete Record</th>
           </tr>
         </thead>
         <tbody id="result-tbody">
-          <tr><td colspan="8" class="empty-state">No records yet.</td></tr>
+          <tr><td colspan="9" class="empty-state">No records yet.</td></tr>
         </tbody>
       </table>
     </div>
@@ -293,6 +396,10 @@ td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
   <div class="section">
     <p class="section-title">Metrics vs target</p>
     <div style="position:relative;height:260px;"><canvas id="chart-metrics" role="img" aria-label="Bar chart showing accuracy FAR and FRR vs targets"></canvas></div>
+  </div>
+  <div class="section">
+    <p class="section-title">Results by Country Location condition</p>
+    <div style="position:relative;height:280px;"><canvas id="chart-country" role="img" aria-label="Stacked bar chart by country location condition"></canvas></div>
   </div>
   <div class="section">
     <p class="section-title">Results by face recognition condition</p>
@@ -323,12 +430,21 @@ td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
   <div style="display: flex; justify-content: space-between; align-items: center;">
     <p class="section-title" style="margin-bottom:0;">Performance summary</p>
     <button class="btn-reset" onclick="generateFullPDF()" style="background: #2563eb; color: white;">
-  <i class="ti ti-file-export"></i> Download Full Research PDF
+  <i class="ti ti-file-export"></i> Download Full Research PDF </button>
   </div>
   <div class="table-wrap">
       <table>
         <thead><tr><th>Metric</th><th>Formula</th><th>Value</th><th>Target</th><th>Status</th></tr></thead>
         <tbody id="report-tbody"><tr><td colspan="5" class="empty-state">No data yet.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+    <div class="section">
+    <p class="section-title">By country location condition</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Condition</th><th>Total</th><th>Correct</th><th>Wrong</th><th>Accuracy</th></tr></thead>
+        <tbody id="country-cond-tbody"><tr><td colspan="5" class="empty-state">No data yet.</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -354,11 +470,15 @@ td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
 
 <!-- TAB: RESET -->
 <div id="tab-reset" class="tab-content">
-  <div class="reset-panel">
-    <div class="reset-panel-header">
-      <i class="ti ti-alert-triangle" aria-hidden="true"></i> Warning — this cannot be undone
-      <p>Choose what you want to reset. All selected data will be permanently deleted.</p>
-    </div>
+<div class="reset-panel-header">
+  <i class="ti ti-alert-triangle"></i>
+  <span>Warning — this cannot be undone</span>
+</div>
+
+<p>
+Choose what you want to reset.
+All selected data will be permanently deleted.
+</p>
 
     <div class="reset-option">
       <div class="reset-option-left">
@@ -387,6 +507,22 @@ td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
       </div>
       <div class="reset-option-action">
         <button class="btn-reset" onclick="resetByType('impostor')"><i class="ti ti-refresh" aria-hidden="true"></i> Reset impostor</button>
+      </div>
+    </div>
+
+        <div class="reset-option">
+      <div class="reset-option-left">
+        <div class="reset-option-label">Reset by Country Location condition</div>
+        <div class="reset-option-desc">Delete all records for a specific country location</div>
+      </div>
+      <div class="reset-option-action">
+        <select id="reset-country" style="min-width:130px;">
+          <option>Malaysia</option>
+          <option>Singapore</option>
+          <option>Indonesia</option>
+          <option>Thailand</option>
+        </select>
+        <button class="btn-reset" onclick="resetByCountry()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset</button>
       </div>
     </div>
 
@@ -441,7 +577,7 @@ td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
 <script>
   
 let records = [];
-let cM, cFace, cPasskey, cG, cI;
+let cM, cCountry, cFace, cPasskey, cG, cI;
 
 function showTab(name, el) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -470,11 +606,12 @@ function classify(type, result) {
 function addRecord() {
   const testno  = parseInt(document.getElementById('inp-testno').value) || records.length + 1;
   const user    = document.getElementById('inp-user').value.trim() || 'User';
+  const country = document.getElementById('inp-country').value;
   const face    = document.getElementById('inp-face').value;
   const passkey = document.getElementById('inp-passkey').value;
   const type    = document.getElementById('inp-type').value;
   const result  = document.getElementById('inp-result').value;
-  records.push({ testno, user, face, passkey, type, result, cls: classify(type, result) });
+  records.push({ testno, user, country, face, passkey, type, result, cls: classify(type, result) });
   document.getElementById('inp-testno').value = testno + 1;
   updateAll();
 }
@@ -495,6 +632,21 @@ function resetByType(type) {
   if (!confirm('Delete ' + n + ' ' + type + ' record(s)?')) return;
   records = records.filter(r => r.type !== type);
   updateAll(); renderResetSummary();
+}
+
+function resetByCountry() {
+  const cond = document.getElementById('reset-country').value;
+  const n = records.filter(r => r.country === cond).length;
+
+  if (!n) {
+      alert('No records for: ' + cond);
+      return;
+  }
+  if (!confirm('Delete ' + n + ' record(s) for "' + cond + '"?'))
+      return;
+  records = records.filter(r => r.country !== cond);
+  updateAll();
+  renderResetSummary();
 }
 
 function resetByFace() {
@@ -542,38 +694,17 @@ function colorCls(val, good, bad, lower) {
   return val >= good ? 'metric-good' : val >= bad ? 'metric-warn' : 'metric-bad';
 }
 
-function updateAll() {
-  const m = getMetrics();
-  ['tp','tn','fp','fn'].forEach(k => document.getElementById('cm-'+k).textContent = m[k.toUpperCase()]);
-  document.getElementById('m-total').textContent   = m.total;
-  document.getElementById('m-genuine').textContent  = m.genuine;
-  document.getElementById('m-impostor').textContent = m.impostor;
-
-  const aEl = document.getElementById('m-acc');
-  aEl.textContent = m.acc !== null ? m.acc.toFixed(1)+'%' : '—';
-  aEl.className = 'metric-value ' + colorCls(m.acc, 85, 70, false);
-
-  const farEl = document.getElementById('m-far');
-  farEl.textContent = m.far !== null ? m.far.toFixed(1)+'%' : '—';
-  farEl.className = 'metric-value ' + colorCls(m.far, 5, 10, true);
-
-  const frrEl = document.getElementById('m-frr');
-  frrEl.textContent = m.frr !== null ? m.frr.toFixed(1)+'%' : '—';
-  frrEl.className = 'metric-value ' + colorCls(m.frr, 10, 20, true);
-
-  renderTable();
-}
-
 function renderTable() {
   const tbody = document.getElementById('result-tbody');
   if (!records.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No records yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No records yet.</td></tr>';
     return;
   }
   tbody.innerHTML = records.map((r, i) => `
     <tr>
       <td>${r.testno}</td>
       <td>${r.user}</td>
+      <td>${r.country}</td>
       <td>${r.face}</td>
       <td><span class="badge b-${r.passkey.toLowerCase()}">${r.passkey}</span></td>
       <td><span class="badge b-${r.type}">${r.type}</span></td>
@@ -610,6 +741,81 @@ function renderCharts() {
         } 
     }
 });
+
+const countryLabels =
+[
+  'Malaysia',
+  'Singapore',
+  'Indonesia',
+  'Thailand'
+].filter(
+  c => records.some(r => r.country === c)
+);
+
+destroyChart(cCountry);
+
+cCountry = new Chart(
+  document.getElementById('chart-country'),
+  {
+    type:'bar',
+    data:{
+      labels:
+        countryLabels.length
+        ? countryLabels
+        : ['No data'],
+
+      datasets:[
+        {
+          label:'Correct',
+          data: countryLabels.map(
+            c => records.filter(
+              r => r.country === c &&
+              (r.cls === 'TP' || r.cls === 'TN')
+            ).length
+          ),
+          backgroundColor:'#1D9E75',
+          borderRadius:4
+        },
+
+        {
+          label:'Wrong',
+          data: countryLabels.map(
+            c => records.filter(
+              r => r.country === c &&
+              (r.cls === 'FP' || r.cls === 'FN')
+            ).length
+          ),
+          backgroundColor:'#E24B4A',
+          borderRadius:4
+        }
+      ]
+    },
+
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{
+        legend:{
+          display:true,
+          position:'top'
+        }
+      },
+      scales:{
+        x:{
+          stacked:false,
+          ticks:{
+            autoSkip:false,
+            maxRotation:30
+          }
+        },
+        y:{
+          stacked:false,
+          beginAtZero:true
+        }
+      }
+    }
+  }
+);
 
   const faceLabels = FACE_CONDITIONS.filter(c => records.some(r => r.face === c));
 // ... dalam fungsi renderCharts()
@@ -697,7 +903,7 @@ function renderReport() {
   const rb = document.getElementById('report-tbody');
   if (!m.total) {
     rb.innerHTML = '<tr><td colspan="5" class="empty-state">No data yet.</td></tr>';
-    ['face-cond-tbody','passkey-tbody'].forEach(id=>{document.getElementById(id).innerHTML='<tr><td colspan="5" class="empty-state">No data yet.</td></tr>';});
+    ['country-cond-tbody','face-cond-tbody','passkey-tbody'].forEach(id=>{document.getElementById(id).innerHTML='<tr><td colspan="5" class="empty-state">No data yet.</td></tr>';});
     return;
   }
   rb.innerHTML = [
@@ -711,6 +917,12 @@ function renderReport() {
     ['False Negative (FN)','Genuine rejected',  m.FN,'—','—'],
   ].map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
 
+  const countryConds =[...new Set(records.map(r => r.country))];
+condTable(
+    countryConds.map(c => [c,records.filter(r=>r.country===c).length,records.filter(
+      r=>r.country===c && (r.cls==='TP'||r.cls==='TN')).length]),'country-cond-tbody'
+);
+  
   const faceConds = FACE_CONDITIONS.filter(c => records.some(r => r.face === c));
   condTable(
     faceConds.map(c => [c, records.filter(r=>r.face===c).length, records.filter(r=>r.face===c&&(r.cls==='TP'||r.cls==='TN')).length]),
@@ -726,8 +938,35 @@ function renderResetSummary() {
   const m = getMetrics();
   const el = document.getElementById('reset-summary');
   if (!m.total) { el.textContent = 'No records yet.'; return; }
-  const faceTested = [...new Set(records.map(r => r.face))];
-  el.innerHTML = `Total records: <strong>${m.total}</strong> &nbsp;|&nbsp; Genuine: <strong>${m.genuine}</strong> &nbsp;|&nbsp; Impostor: <strong>${m.impostor}</strong><br>Face conditions tested: <strong>${faceTested.join(', ') || '—'}</strong>`;
+  const faceTested =[...new Set(records.map(r => r.face))];
+
+const countriesTested =[...new Set(records.map(r => r.country))];
+
+el.innerHTML =
+`
+Total records:
+<strong>${m.total}</strong>
+
+&nbsp;|&nbsp;
+
+Genuine:
+<strong>${m.genuine}</strong>
+
+&nbsp;|&nbsp;
+
+Impostor:
+<strong>${m.impostor}</strong>
+
+<br>
+
+Countries tested:
+<strong>${countriesTested.join(', ') || '—'}</strong>
+
+<br>
+
+Face conditions tested:
+<strong>${faceTested.join(', ') || '—'}</strong>
+`;
 }
 
 async function generateFullPDF() {
@@ -768,9 +1007,55 @@ async function generateFullPDF() {
     });
     
     // Pastikan tab asal yang aktif sahaja yang kelihatan
-    showTab('report', document.querySelector('.tab.active')); 
+    showTab('report', document.querySelector('.tab')[3]); 
     
     doc.save("Research_Full_Report.pdf");
+}
+function updateAll() {
+
+  const m = getMetrics();
+
+  ['tp','tn','fp','fn'].forEach(
+    k => document.getElementById('cm-'+k).textContent =
+    m[k.toUpperCase()]
+  );
+
+  document.getElementById('m-total').textContent = m.total;
+  document.getElementById('m-genuine').textContent = m.genuine;
+  document.getElementById('m-impostor').textContent = m.impostor;
+
+  const aEl = document.getElementById('m-acc');
+  aEl.textContent = m.acc !== null
+      ? m.acc.toFixed(1) + '%'
+      : '—';
+
+  aEl.className =
+      'metric-value ' +
+      colorCls(m.acc,85,70,false);
+
+  const farEl = document.getElementById('m-far');
+
+  farEl.textContent = m.far !== null
+      ? m.far.toFixed(1) + '%'
+      : '—';
+
+  farEl.className =
+      'metric-value ' +
+      colorCls(m.far,5,10,true);
+
+  const frrEl = document.getElementById('m-frr');
+
+  frrEl.textContent = m.frr !== null
+      ? m.frr.toFixed(1) + '%'
+      : '—';
+
+  frrEl.className =
+      'metric-value ' +
+      colorCls(m.frr,10,20,true);
+
+  renderTable();
+  renderReport();
+  renderResetSummary();
 }
 updateAll();
 </script>
