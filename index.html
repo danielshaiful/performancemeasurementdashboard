@@ -1,1065 +1,1254 @@
-<h2 class="sr-only">Face Recognition & Passkey authentication & authorization performance measurement dashboard with Accuracy, FAR, and FRR metrics</h2>
-<style>
-  :root {
-  --color-primary: #2563eb;
-  --color-bg: #f8fafc;
-  --color-card: #ffffff;
-  --color-text-primary: #1e293b;
-  --color-text-secondary: #64748b;
-  --color-tp: #16a34a;
-  --color-fn: #d97706;
-  --color-fp: #dc2626;
-  --color-tn: #2563eb;
-  --border-radius-md: 8px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
+<!DOCTYPE html>
+<html lang="ms">
 
-body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--color-bg); color: var(--color-text-primary); margin: 0; padding: 20px; }
+<head>
+    <meta charset="UTF-8">
+    <title>Auth Performance Dashboard</title>
+</head>
 
-/* Tabs */
-.tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; }
-.tab { padding: 10px 20px; cursor: pointer; border: none; background: none; font-weight: 600; color: var(--color-text-secondary); }
-.tab.active { color: var(--color-primary); border-bottom: 2px solid var(--color-primary); }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
+<body>
+    <h2 class="sr-only">Face Recognition & Passkey authentication & authorization performance measurement dashboard with
+        Accuracy, FAR, and FRR metrics</h2>
+    <style>
+        :root {
+            --color-primary: #2563eb;
+            --color-bg: #f8fafc;
+            --color-card: #ffffff;
+            --color-text-primary: #1e293b;
+            --color-text-secondary: #64748b;
+            --color-tp: #16a34a;
+            --color-fn: #d97706;
+            --color-fp: #dc2626;
+            --color-tn: #2563eb;
+            --border-radius-md: 8px;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
 
-/* Sections & Cards */
-.section { background: var(--color-card); padding: 20px; border-radius: var(--border-radius-md); box-shadow: var(--shadow); margin-bottom: 20px; }
-.section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 15px; color: var(--color-text-primary); }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text-primary);
+            margin: 0;
+            padding: 20px;
+        }
 
-.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 15px; }
-.form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; }
-input, select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; }
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
 
-/* Metrics Grid */
-.metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 15px; }
-.metric-card { padding: 15px; border: 1px solid #e2e8f0; border-radius: var(--border-radius-md); text-align: center; }
-.metric-value { font-size: 1.5rem; font-weight: 800; margin: 5px 0; }
-.metric-sub { font-size: 0.75rem; color: var(--color-text-secondary); }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+        }
 
-/* Confusion Matrix */
-.confusion-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.confusion-cell { padding: 15px; border-radius: var(--border-radius-md); text-align: center; color: white; }
-.cell-tp { background: var(--color-tp); }
-.cell-fn { background: var(--color-fn); }
-.cell-fp { background: var(--color-fp); }
-.cell-tn { background: var(--color-tn); }
+        .tab.active {
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-primary);
+        }
 
-/* Buttons & Badges */
-.btn-add { background: var(--color-primary); color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
-.btn-danger { background: #fee2e2; color: #dc2626; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
-.badge { padding: 2px 8px; border-radius: 99px; font-size: 0.75rem; font-weight: 600; }
-.badge-genuine { background: #dcfce7; color: #166534; }
-.badge-impostor { background: #fee2e2; color: #991b1b; }
+        .tab-content {
+            display: none;
+        }
 
-/* Table Styling */
-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-th { text-align: left; padding: 10px; border-bottom: 2px solid #e2e8f0; font-size: 0.85rem; }
-td { padding: 10px; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+        .tab-content.active {
+            display: block;
+        }
 
-/* Penambahbaikan untuk Reset Panel */
-.reset-panel {
-  background: white;
-  padding: 24px;
-  border: 1px solid #ff0000;
-  border-radius: 12px;
-  margin-bottom: 20px;
-}
+        .section {
+            background: var(--color-card);
+            padding: 20px;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
 
-.reset-panel-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #dc2626;
-  font-weight: 700;
-  margin-bottom: 12px;
-}
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--color-text-primary);
+        }
 
-.reset-panel-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #dc2626; /* Ini akan menjadikan teks berwarna merah */
-  font-weight: 700;
-  margin-bottom: 12px;
-}
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
 
-.reset-option {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 0;
-  border-bottom: 1px solid #f1f5f9;
-}
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
 
-.reset-option:last-child { border-bottom: none; }
+        input,
+        select {
+            padding: 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+        }
 
-.reset-option-label {
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 4px;
-}
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+        }
 
-.reset-option-desc {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-}
+        .metric-card {
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius-md);
+            text-align: center;
+        }
 
-/* Penambahbaikan butang reset */
-.btn-danger {
-  background: #fef2f2;
-  color: #dc2626;
-  border: 1px solid #fecaca;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s;
-}
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 5px 0;
+        }
 
-.btn-danger:hover { background: #fee2e2; }
+        .metric-sub {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+        }
 
-.btn-reset {
-  background: white;
-  color: #475569;
-  border: 1px solid #cbd5e1;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-}
+        .confusion-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
 
-.btn-reset:hover { background: #f8fafc; }
+        .confusion-cell {
+            padding: 15px;
+            border-radius: var(--border-radius-md);
+            text-align: center;
+            color: white;
+        }
 
-/* Styling untuk header label */
-  .matrix-header {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
+        .cell-tp {
+            background: var(--color-tp);
+        }
 
-  .header-item {
-    text-align: center;
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: var(--color-text-primary);
-    background: #f1f5f9;
-    padding: 8px;
-    border-radius: 6px;
-  }
+        .cell-fn {
+            background: var(--color-fn);
+        }
 
-  /* Pastikan confusion grid selari */
-  .confusion-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
+        .cell-fp {
+            background: var(--color-fp);
+        }
 
-.metric-good{
-  color:#16a34a;
-}
+        .cell-tn {
+            background: var(--color-tn);
+        }
 
-.metric-warn{
-  color:#d97706;
-}
+        .btn-add {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
 
-.metric-bad{
-  color:#dc2626;
-}
+        .badge {
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
 
-.b-good{
-  background:#dcfce7;
-  color:#166534;
-}
+        .badge-genuine {
+            background: #dcfce7;
+            color: #166534;
+        }
 
-.b-fair{
-  background:#fef3c7;
-  color:#92400e;
-}
+        .badge-impostor {
+            background: #fee2e2;
+            color: #991b1b;
+        }
 
-.b-poor{
-  background:#fee2e2;
-  color:#991b1b;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
 
-.b-na{
-  background:#e2e8f0;
-  color:#475569;
-}
+        th {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 0.85rem;
+        }
 
-.b-accepted{
-  background:#dcfce7;
-  color:#166534;
-}
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
 
-.b-rejected{
-  background:#fee2e2;
-  color:#991b1b;
-}
+        .reset-panel {
+            background: white;
+            padding: 24px;
+            border: 1px solid #ff0000;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
 
-.b-genuine{
-  background:#dbeafe;
-  color:#1d4ed8;
-}
+        .reset-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #dc2626;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
 
-.b-impostor{
-  background:#fef3c7;
-  color:#92400e;
-}
+        .reset-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
 
-.b-tp{
-  background:#dcfce7;
-  color:#166534;
-}
+        .reset-option:last-child {
+            border-bottom: none;
+        }
 
-.b-fn{
-  background:#fef3c7;
-  color:#92400e;
-}
+        .reset-option-label {
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 4px;
+        }
 
-.b-fp{
-  background:#fee2e2;
-  color:#991b1b;
-}
+        .reset-option-desc {
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+        }
 
-.b-tn{
-  background:#dbeafe;
-  color:#1d4ed8;
-}
+        .btn-danger {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
 
-.btn-small{
-  border:none;
-  padding:6px 10px;
-  border-radius:4px;
-  cursor:pointer;
-  background:#fee2e2;
-  color:#dc2626;
-}
+        .btn-danger:hover {
+            background: #fee2e2;
+        }
 
-.btn-small:hover{
-  background:#fecaca;
-}
+        .btn-reset {
+            background: white;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
 
-.hint-box{
-  margin-top:10px;
-  padding:10px;
-  background:#eff6ff;
-  border:1px solid #bfdbfe;
-  border-radius:6px;
-  color:#1e40af;
-  font-size:0.9rem;
-}
-</style>
+        .btn-reset:hover {
+            background: #f8fafc;
+        }
 
-<div style="padding:1rem 0;">
-<div class="tabs">
-  <button class="tab active" onclick="showTab('input',this)">Add result</button>
-  <button class="tab" onclick="showTab('results',this)">Results log</button>
-  <button class="tab" onclick="showTab('charts',this)">Charts</button>
-  <button class="tab" onclick="showTab('report',this)">Report</button>
-  <button class="tab" onclick="showTab('reset',this)">Reset</button>
-</div>
+        .matrix-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
 
-<!-- TAB: INPUT -->
-<div id="tab-input" class="tab-content active">
-  <div class="section">
-    <p class="section-title">Record test attempt</p>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Test no.</label>
-        <input type="number" id="inp-testno" min="1" value="1" style="width:100%;">
-      </div>
-      <div class="form-group">
-        <label>User</label>
-        <input type="text" id="inp-user" placeholder="e.g. Daniel Shaiful" style="width:100%;">
-      </div>
-      <div class="form-group">
-      <label>Country Location</label>
-        <select id="inp-country" style="width:100%;">
-          <option>Malaysia</option>
-          <option>Singapore</option>
-          <option>Indonesia</option>
-          <option>Thailand</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Face recognition condition</label>
-        <select id="inp-face" style="width:100%;">
-          <option value="None">None</option>
-          <option value="Recognized">Recognized</option>
-          <option value="Unrecognized">Unrecognized</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Passkey</label>
-        <select id="inp-passkey" style="width:100%;">
-          <option value="None">None</option>
-          <option value="Accepted">Accepted</option>
-          <option value="Rejected">Rejected</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Attempt type</label>
-        <select id="inp-type" style="width:100%;" onchange="updateHint()">
-          <option value="genuine">Genuine (real user)</option>
-          <option value="impostor">Impostor (wrong person)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>System result</label>
-        <select id="inp-result" style="width:100%;">
-          <option value="accepted">Accepted</option>
-          <option value="rejected">Rejected</option>
-        </select>
-      </div>
+        .header-item {
+            text-align: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--color-text-primary);
+            background: #f1f5f9;
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .metric-good {
+            color: #16a34a;
+        }
+
+        .metric-warn {
+            color: #d97706;
+        }
+
+        .metric-bad {
+            color: #dc2626;
+        }
+
+        .b-good {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .b-fair {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .b-poor {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .b-na {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .b-accepted {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .b-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .b-genuine {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .b-impostor {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .b-tp {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .b-fn {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .b-fp {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .b-tn {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .b-none {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-small {
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-small:hover {
+            background: #fecaca;
+        }
+
+        .hint-box {
+            margin-top: 10px;
+            padding: 10px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            color: #1e40af;
+            font-size: 0.9rem;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .summary-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+        }
+    </style>
+
+    <div style="padding:1rem 0;">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('input',this)">Add result</button>
+            <button class="tab" onclick="showTab('results',this)">Results log</button>
+            <button class="tab" onclick="showTab('charts',this)">Charts</button>
+            <button class="tab" onclick="showTab('report',this)">Report</button>
+            <button class="tab" onclick="showTab('reset',this)">Reset</button>
+        </div>
+
+        <!-- TAB: INPUT -->
+        <div id="tab-input" class="tab-content active">
+            <div class="section">
+                <p class="section-title">Record test attempt</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Test no.</label>
+                        <input type="number" id="inp-testno" min="1" value="1" style="width:100%;">
+                    </div>
+                    <div class="form-group">
+                        <label>User</label>
+                        <input type="text" id="inp-user" placeholder="e.g. Daniel Shaiful" style="width:100%;">
+                    </div>
+                    <div class="form-group">
+                        <label>Country Location</label>
+                        <select id="inp-country" style="width:100%;">
+                            <option>Malaysia</option>
+                            <option>Singapore</option>
+                            <option>Indonesia</option>
+                            <option>Thailand</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Face recognition condition</label>
+                        <select id="inp-face" style="width:100%;">
+                            <option value="None">None</option>
+                            <option value="Recognized">Recognized</option>
+                            <option value="Unrecognized">Unrecognized</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Passkey</label>
+                        <select id="inp-passkey" style="width:100%;">
+                            <option value="None">None</option>
+                            <option value="Accepted">Accepted</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Attempt type</label>
+                        <select id="inp-type" style="width:100%;" onchange="updateHint()">
+                            <option value="genuine">Genuine (real user)</option>
+                            <option value="impostor">Impostor (wrong person)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>System result</label>
+                        <select id="inp-result" style="width:100%;">
+                            <option value="accepted">Accepted</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="hint-box" id="type-hint">Genuine: use the real registered user's face</div>
+                <div class="btn-row">
+                    <button class="btn-add" onclick="addRecord()">+ Add record</button>
+                    <button class="btn-reset" onclick="showTab('reset',document.querySelectorAll('.tab')[4])">Reset
+                        options</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <p class="section-title">Confusion matrix</p>
+                <div class="matrix-header">
+                    <div class="header-item">Predicted: Accepted</div>
+                    <div class="header-item">Predicted: Rejected</div>
+                </div>
+                <div class="confusion-grid">
+                    <div class="confusion-cell cell-tp">
+                        <div class="cell-label">TP — True Positive</div>
+                        <div class="cell-value" id="cm-tp">0</div>
+                        <div class="cell-desc">Genuine accepted</div>
+                    </div>
+                    <div class="confusion-cell cell-fn">
+                        <div class="cell-label">FN — False Negative</div>
+                        <div class="cell-value" id="cm-fn">0</div>
+                        <div class="cell-desc">Genuine rejected</div>
+                    </div>
+                    <div class="confusion-cell cell-fp">
+                        <div class="cell-label">FP — False Positive</div>
+                        <div class="cell-value" id="cm-fp">0</div>
+                        <div class="cell-desc">Impostor accepted</div>
+                    </div>
+                    <div class="confusion-cell cell-tn">
+                        <div class="cell-label">TN — True Negative</div>
+                        <div class="cell-value" id="cm-tn">0</div>
+                        <div class="cell-desc">Impostor rejected</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <p class="section-title">Live metrics</p>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-label">Accuracy</div>
+                        <div class="metric-value" id="m-acc">—</div>
+                        <div class="metric-sub">Target: &gt;85%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">FAR</div>
+                        <div class="metric-value" id="m-far">—</div>
+                        <div class="metric-sub">Target: &lt;5%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">FRR</div>
+                        <div class="metric-value" id="m-frr">—</div>
+                        <div class="metric-sub">Target: &lt;10%</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total</div>
+                        <div class="metric-value" id="m-total">0</div>
+                        <div class="metric-sub">All attempts</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Genuine</div>
+                        <div class="metric-value" id="m-genuine">0</div>
+                        <div class="metric-sub">Real user</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Impostor</div>
+                        <div class="metric-value" id="m-impostor">0</div>
+                        <div class="metric-sub">Wrong person</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: RESULTS -->
+        <div id="tab-results" class="tab-content">
+            <div class="section">
+                <p class="section-title">Test log</p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>User</th>
+                                <th>Country Location</th>
+                                <th>Face condition</th>
+                                <th>Passkey</th>
+                                <th>Attempt type</th>
+                                <th>System result</th>
+                                <th>Class</th>
+                                <th>Delete Record</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-tbody">
+                            <tr>
+                                <td colspan="9" class="empty-state">No records yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="btn-row" style="margin-top:14px;">
+                    <button class="btn-danger" onclick="resetAll()">Delete all records</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: CHARTS -->
+        <div id="tab-charts" class="tab-content">
+            <div class="section">
+                <p class="section-title">Metrics vs target</p>
+                <div style="position:relative;height:280px;"><canvas id="chart-metrics"></canvas></div>
+            </div>
+            <div class="section">
+                <p class="section-title">Results by Country Location condition</p>
+                <div style="position:relative;height:300px;"><canvas id="chart-country"></canvas></div>
+            </div>
+            <div class="section">
+                <p class="section-title">Results by face recognition condition</p>
+                <div style="position:relative;height:300px;"><canvas id="chart-face"></canvas></div>
+            </div>
+            <div class="section">
+                <p class="section-title">Results by passkey condition</p>
+                <div style="position:relative;height:260px;"><canvas id="chart-passkey"></canvas></div>
+            </div>
+            <div class="section">
+                <p class="section-title">Genuine vs impostor breakdown</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                    <div>
+                        <div
+                            style="font-size:12px;color:var(--color-text-secondary);text-align:center;margin-bottom:8px;">
+                            Genuine attempts</div>
+                        <div style="position:relative;height:220px;"><canvas id="chart-genuine"></canvas></div>
+                    </div>
+                    <div>
+                        <div
+                            style="font-size:12px;color:var(--color-text-secondary);text-align:center;margin-bottom:8px;">
+                            Impostor attempts</div>
+                        <div style="position:relative;height:220px;"><canvas id="chart-impostor"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: REPORT -->
+        <div id="tab-report" class="tab-content">
+            <div class="section">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <p class="section-title" style="margin-bottom:0;">Performance summary</p>
+                    <button class="btn-reset" onclick="generateFullPDF()"
+                        style="background:#2563eb;color:white;">Download Full Research PDF</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Formula</th>
+                                <th>Value</th>
+                                <th>Target</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-tbody">
+                            <tr>
+                                <td colspan="5" class="empty-state">No data yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="section">
+                <p class="section-title">By country location condition</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Condition</th>
+                            <th>Total</th>
+                            <th>Correct</th>
+                            <th>Wrong</th>
+                            <th>Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody id="country-cond-tbody">
+                        <tr>
+                            <td colspan="5" class="empty-state">No data yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="section">
+                <p class="section-title">By face recognition condition</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Condition</th>
+                            <th>Total</th>
+                            <th>Correct</th>
+                            <th>Wrong</th>
+                            <th>Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody id="face-cond-tbody">
+                        <tr>
+                            <td colspan="5" class="empty-state">No data yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="section">
+                <p class="section-title">By passkey condition</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Passkey</th>
+                            <th>Total</th>
+                            <th>Correct</th>
+                            <th>Wrong</th>
+                            <th>Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody id="passkey-tbody">
+                        <tr>
+                            <td colspan="5" class="empty-state">No data yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB: RESET -->
+        <div id="tab-reset" class="tab-content">
+            <div class="reset-panel">
+                <div class="reset-panel-header">⚠ Warning — this cannot be undone</div>
+                <p>Choose what you want to reset. All selected data will be permanently deleted.</p>
+
+                <div class="reset-option">
+                    <div>
+                        <div class="reset-option-label">Reset all records</div>
+                        <div class="reset-option-desc">Delete all test records and reset confusion matrix to zero</div>
+                    </div>
+                    <button class="btn-danger" onclick="resetAll()">Reset all</button>
+                </div>
+                <div class="reset-option">
+                    <div>
+                        <div class="reset-option-label">Reset genuine attempts only</div>
+                        <div class="reset-option-desc">Delete only genuine user records (TP + FN)</div>
+                    </div>
+                    <button class="btn-reset" onclick="resetByType('genuine')">Reset genuine</button>
+                </div>
+                <div class="reset-option">
+                    <div>
+                        <div class="reset-option-label">Reset impostor attempts only</div>
+                        <div class="reset-option-desc">Delete only impostor records (FP + TN)</div>
+                    </div>
+                    <button class="btn-reset" onclick="resetByType('impostor')">Reset impostor</button>
+                </div>
+                <div class="reset-option">
+                    <div>
+                        <div class="reset-option-label">Reset by Country Location condition</div>
+                        <div class="reset-option-desc">Delete all records for a specific country location</div>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <select id="reset-country">
+                            <option>Malaysia</option>
+                            <option>Singapore</option>
+                            <option>Indonesia</option>
+                            <option>Thailand</option>
+                        </select>
+                        <button class="btn-reset" onclick="resetByCountry()">Reset</button>
+                    </div>
+                </div>
+                <div class="reset-option">
+                    <div>
+                        <div class="reset-option-label">Reset by face recognition condition</div>
+                        <div class="reset-option-desc">Delete all records for a specific face recognition condition
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <select id="reset-face">
+                            <option>None</option>
+                            <option>Recognized</option>
+                            <option>Unrecognized</option>
+                        </select>
+                        <button class="btn-reset" onclick="resetByFace()">Reset</button>
+                    </div>
+                </div>
+                <div class="reset-option">
+                    <div>
+                        <div class="reset-option-label">Reset by passkey condition</div>
+                        <div class="reset-option-desc">Delete all records where passkey was accepted or rejected</div>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <select id="reset-passkey">
+                            <option value="None">None</option>
+                            <option value="Accepted">Accepted</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                        <button class="btn-reset" onclick="resetByPasskey()">Reset</button>
+                    </div>
+                </div>
+                <div class="reset-option">
+                    <div>
+                        <div class="reset-option-label">Reset test counter</div>
+                        <div class="reset-option-desc">Reset test number back to 1 — existing records are kept</div>
+                    </div>
+                    <button class="btn-reset" onclick="resetCounter()">Reset counter</button>
+                </div>
+            </div>
+
+            <div class="summary-box">
+                <div style="font-weight:500;color:var(--color-text-primary);margin-bottom:8px;">Current data summary
+                </div>
+                <div id="reset-summary">No records yet.</div>
+            </div>
+        </div>
     </div>
-    <div class="hint-box" id="type-hint">Genuine: use the real registered user's face</div>
-    <div class="btn-row">
-      <button class="btn-add" onclick="addRecord()"><i class="ti ti-plus" aria-hidden="true"></i> Add record</button>
-      <button class="btn-reset" onclick="showTab('reset',document.querySelectorAll('.tab')[4])"><i class="ti ti-refresh" aria-hidden="true"></i> Reset options</button>
-    </div>
-  </div>
 
-<!-- Bahagian HTML -->
-<div class="section">
-  <p class="section-title">Confusion matrix</p>
-  
-  <!-- Header Grid -->
-  <div class="matrix-header">
-    <div class="header-item">Predicted: Accepted</div>
-    <div class="header-item">Predicted: Rejected</div>
-  </div>
+    <!-- Chart.js + DataLabels plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-  <!-- Confusion Grid -->
-  <div class="confusion-grid">
-    <div class="confusion-cell cell-tp">
-      <div class="cell-label">TP — True Positive</div>
-      <div class="cell-value" id="cm-tp">0</div>
-      <div class="cell-desc">Genuine accepted</div>
-    </div>
-    <div class="confusion-cell cell-fn">
-      <div class="cell-label">FN — False Negative</div>
-      <div class="cell-value" id="cm-fn">0</div>
-      <div class="cell-desc">Genuine rejected</div>
-    </div>
-    <div class="confusion-cell cell-fp">
-      <div class="cell-label">FP — False Positive</div>
-      <div class="cell-value" id="cm-fp">0</div>
-      <div class="cell-desc">Impostor accepted</div>
-    </div>
-    <div class="confusion-cell cell-tn">
-      <div class="cell-label">TN — True Negative</div>
-      <div class="cell-value" id="cm-tn">0</div>
-      <div class="cell-desc">Impostor rejected</div>
-    </div>
-  </div>
-</div>
+    <script>
+        // Register DataLabels plugin globally
+        Chart.register(ChartDataLabels);
 
-  <div class="section">
-    <p class="section-title">Live metrics</p>
-    <div class="metric-grid">
-      <div class="metric-card"><div class="metric-label">Accuracy</div><div class="metric-value" id="m-acc">—</div><div class="metric-sub">Target: &gt;85%</div></div>
-      <div class="metric-card"><div class="metric-label">FAR</div><div class="metric-value" id="m-far">—</div><div class="metric-sub">Target: &lt;5%</div></div>
-      <div class="metric-card"><div class="metric-label">FRR</div><div class="metric-value" id="m-frr">—</div><div class="metric-sub">Target: &lt;10%</div></div>
-      <div class="metric-card"><div class="metric-label">Total</div><div class="metric-value" id="m-total">0</div><div class="metric-sub">All attempts</div></div>
-      <div class="metric-card"><div class="metric-label">Genuine</div><div class="metric-value" id="m-genuine">0</div><div class="metric-sub">Real user</div></div>
-      <div class="metric-card"><div class="metric-label">Impostor</div><div class="metric-value" id="m-impostor">0</div><div class="metric-sub">Wrong person</div></div>
-    </div>
-  </div>
-</div>
+        let records = [];
+        let cM, cCountry, cFace, cPasskey, cG, cI;
 
-<!-- TAB: RESULTS -->
-<div id="tab-results" class="tab-content">
-  <div class="section">
-    <p class="section-title">Test log</p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>No.</th><th>User</th><th>Country Location</th><th>Face condition</th><th>Passkey</th>
-            <th>Attempt type</th><th>System result</th><th>Class</th><th>Delete Record</th>
-          </tr>
-        </thead>
-        <tbody id="result-tbody">
-          <tr><td colspan="9" class="empty-state">No records yet.</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="btn-row" style="margin-top:14px;">
-      <button class="btn-danger" onclick="resetAll()"><i class="ti ti-trash" aria-hidden="true"></i> Delete all records</button>
-    </div>
-  </div>
-</div>
+        const FACE_CONDITIONS = ['None', 'Recognized', 'Unrecognized'];
 
-<!-- TAB: CHARTS -->
-<div id="tab-charts" class="tab-content">
-  <div class="section">
-    <p class="section-title">Metrics vs target</p>
-    <div style="position:relative;height:260px;"><canvas id="chart-metrics" role="img" aria-label="Bar chart showing accuracy FAR and FRR vs targets"></canvas></div>
-  </div>
-  <div class="section">
-    <p class="section-title">Results by Country Location condition</p>
-    <div style="position:relative;height:280px;"><canvas id="chart-country" role="img" aria-label="Stacked bar chart by country location condition"></canvas></div>
-  </div>
-  <div class="section">
-    <p class="section-title">Results by face recognition condition</p>
-    <div style="position:relative;height:280px;"><canvas id="chart-face" role="img" aria-label="Stacked bar chart by face recognition condition"></canvas></div>
-  </div>
-  <div class="section">
-    <p class="section-title">Results by passkey condition</p>
-    <div style="position:relative;height:220px;"><canvas id="chart-passkey" role="img" aria-label="Stacked bar chart by passkey condition"></canvas></div>
-  </div>
-  <div class="section">
-    <p class="section-title">Genuine vs impostor breakdown</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-      <div>
-        <div style="font-size:12px;color:var(--color-text-secondary);text-align:center;margin-bottom:8px;">Genuine attempts</div>
-        <div style="position:relative;height:200px;"><canvas id="chart-genuine" role="img" aria-label="Doughnut chart of genuine outcomes"></canvas></div>
-      </div>
-      <div>
-        <div style="font-size:12px;color:var(--color-text-secondary);text-align:center;margin-bottom:8px;">Impostor attempts</div>
-        <div style="position:relative;height:200px;"><canvas id="chart-impostor" role="img" aria-label="Doughnut chart of impostor outcomes"></canvas></div>
-      </div>
-    </div>
-  </div>
-</div>
+        // ── shared datalabels config for BAR charts ──────────────────────────────────
+        const BAR_DATALABELS = {
+            anchor: 'center',
+            align: 'center',
+            color: '#1e293b',
+            font: { weight: '700', size: 12 },
+            formatter: v => v === 0 ? '' : v   // kosongkan label kalau 0
+        };
 
-<!-- TAB: REPORT -->
-<div id="tab-report" class="tab-content">
-  <div class="section">
-  <div style="display: flex; justify-content: space-between; align-items: center;">
-    <p class="section-title" style="margin-bottom:0;">Performance summary</p>
-    <button class="btn-reset" onclick="generateFullPDF()" style="background: #2563eb; color: white;">
-  <i class="ti ti-file-export"></i> Download Full Research PDF </button>
-  </div>
-  <div class="table-wrap">
-      <table>
-        <thead><tr><th>Metric</th><th>Formula</th><th>Value</th><th>Target</th><th>Status</th></tr></thead>
-        <tbody id="report-tbody"><tr><td colspan="5" class="empty-state">No data yet.</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-    <div class="section">
-    <p class="section-title">By country location condition</p>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Condition</th><th>Total</th><th>Correct</th><th>Wrong</th><th>Accuracy</th></tr></thead>
-        <tbody id="country-cond-tbody"><tr><td colspan="5" class="empty-state">No data yet.</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-  <div class="section">
-    <p class="section-title">By face recognition condition</p>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Condition</th><th>Total</th><th>Correct</th><th>Wrong</th><th>Accuracy</th></tr></thead>
-        <tbody id="face-cond-tbody"><tr><td colspan="5" class="empty-state">No data yet.</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-  <div class="section">
-    <p class="section-title">By passkey condition</p>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Passkey</th><th>Total</th><th>Correct</th><th>Wrong</th><th>Accuracy</th></tr></thead>
-        <tbody id="passkey-tbody"><tr><td colspan="5" class="empty-state">No data yet.</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-</div>
+        // ── shared datalabels config untuk metrics chart (ada % sign) ────────────────
+        const METRICS_DATALABELS = {
+            anchor: 'center',
+            align: 'center',
+            color: '#1e293b',
+            font: { weight: '700', size: 12 },
+            formatter: (v, ctx) => {
+                // dataset index 1 = Target, tunjuk label "%"
+                // dataset index 0 = Actual
+                return v === 0 ? '' : v + '%';
+            }
+        };
 
-<!-- TAB: RESET -->
-<div id="tab-reset" class="tab-content">
-<div class="reset-panel-header">
-  <i class="ti ti-alert-triangle"></i>
-  <span>Warning — this cannot be undone</span>
-</div>
+        function showTab(name, el) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            if (el) el.classList.add('active');
+            if (name === 'charts') setTimeout(renderCharts, 50);
+            if (name === 'report') renderReport();
+            if (name === 'reset') renderResetSummary();
+        }
 
-<p>
-Choose what you want to reset.
-All selected data will be permanently deleted.
-</p>
+        function updateHint() {
+            const t = document.getElementById('inp-type').value;
+            document.getElementById('type-hint').textContent = t === 'genuine'
+                ? "Genuine: use the real registered user's face"
+                : 'Impostor: use a different person, photo, or video';
+        }
 
-    <div class="reset-option">
-      <div class="reset-option-left">
-        <div class="reset-option-label">Reset all records</div>
-        <div class="reset-option-desc">Delete all test records and reset confusion matrix to zero</div>
-      </div>
-      <div class="reset-option-action">
-        <button class="btn-danger" onclick="resetAll()"><i class="ti ti-trash" aria-hidden="true"></i> Reset all</button>
-      </div>
-    </div>
+        function classify(type, result) {
+            if (type === 'genuine' && result === 'accepted') return 'TP';
+            if (type === 'genuine' && result === 'rejected') return 'FN';
+            if (type === 'impostor' && result === 'accepted') return 'FP';
+            return 'TN';
+        }
 
-    <div class="reset-option">
-      <div class="reset-option-left">
-        <div class="reset-option-label">Reset genuine attempts only</div>
-        <div class="reset-option-desc">Delete only genuine user records (TP + FN)</div>
-      </div>
-      <div class="reset-option-action">
-        <button class="btn-reset" onclick="resetByType('genuine')"><i class="ti ti-refresh" aria-hidden="true"></i> Reset genuine</button>
-      </div>
-    </div>
+        function addRecord() {
+            const testno = parseInt(document.getElementById('inp-testno').value) || records.length + 1;
+            const user = document.getElementById('inp-user').value.trim() || 'User';
+            const country = document.getElementById('inp-country').value;
+            const face = document.getElementById('inp-face').value;
+            const passkey = document.getElementById('inp-passkey').value;
+            const type = document.getElementById('inp-type').value;
+            const result = document.getElementById('inp-result').value;
+            records.push({ testno, user, country, face, passkey, type, result, cls: classify(type, result) });
+            document.getElementById('inp-testno').value = testno + 1;
+            updateAll();
+        }
 
-    <div class="reset-option">
-      <div class="reset-option-left">
-        <div class="reset-option-label">Reset impostor attempts only</div>
-        <div class="reset-option-desc">Delete only impostor records (FP + TN)</div>
-      </div>
-      <div class="reset-option-action">
-        <button class="btn-reset" onclick="resetByType('impostor')"><i class="ti ti-refresh" aria-hidden="true"></i> Reset impostor</button>
-      </div>
-    </div>
+        function deleteRecord(idx) { records.splice(idx, 1); updateAll(); }
 
-        <div class="reset-option">
-      <div class="reset-option-left">
-        <div class="reset-option-label">Reset by Country Location condition</div>
-        <div class="reset-option-desc">Delete all records for a specific country location</div>
-      </div>
-      <div class="reset-option-action">
-        <select id="reset-country" style="min-width:130px;">
-          <option>Malaysia</option>
-          <option>Singapore</option>
-          <option>Indonesia</option>
-          <option>Thailand</option>
-        </select>
-        <button class="btn-reset" onclick="resetByCountry()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset</button>
-      </div>
-    </div>
+        function resetAll() {
+            if (!confirm('Delete ALL records? This cannot be undone.')) return;
+            records = [];
+            document.getElementById('inp-testno').value = 1;
+            updateAll(); renderResetSummary();
+        }
 
-    <div class="reset-option">
-      <div class="reset-option-left">
-        <div class="reset-option-label">Reset by face recognition condition</div>
-        <div class="reset-option-desc">Delete all records for a specific face recognition condition</div>
-      </div>
-      <div class="reset-option-action">
-        <select id="reset-face" style="min-width:130px;">
-          <option>None</option>
-          <option>Recognized</option>
-          <option>Unrecognized</option>
-        </select>
-        <button class="btn-reset" onclick="resetByFace()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset</button>
-      </div>
-    </div>
+        function resetByType(type) {
+            const n = records.filter(r => r.type === type).length;
+            if (!n) { alert('No ' + type + ' records found.'); return; }
+            if (!confirm('Delete ' + n + ' ' + type + ' record(s)?')) return;
+            records = records.filter(r => r.type !== type);
+            updateAll(); renderResetSummary();
+        }
 
-    <div class="reset-option">
-      <div class="reset-option-left">
-        <div class="reset-option-label">Reset by passkey condition</div>
-        <div class="reset-option-desc">Delete all records where passkey was accepted or rejected</div>
-      </div>
-      <div class="reset-option-action">
-        <select id="reset-passkey" style="min-width:130px;">
-          <option value="None">None</option>
-          <option value="Accepted">Accepted</option>
-          <option value="Rejected">Rejected</option>
-        </select>
-        <button class="btn-reset" onclick="resetByPasskey()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset</button>
-      </div>
-    </div>
+        function resetByCountry() {
+            const cond = document.getElementById('reset-country').value;
+            const n = records.filter(r => r.country === cond).length;
+            if (!n) { alert('No records for: ' + cond); return; }
+            if (!confirm('Delete ' + n + ' record(s) for "' + cond + '"?')) return;
+            records = records.filter(r => r.country !== cond);
+            updateAll(); renderResetSummary();
+        }
 
-    <div class="reset-option">
-      <div class="reset-option-left">
-        <div class="reset-option-label">Reset test counter</div>
-        <div class="reset-option-desc">Reset test number back to 1 — existing records are kept</div>
-      </div>
-      <div class="reset-option-action">
-        <button class="btn-reset" onclick="resetCounter()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset counter</button>
-      </div>
-    </div>
-  </div>
+        function resetByFace() {
+            const cond = document.getElementById('reset-face').value;
+            const n = records.filter(r => r.face === cond).length;
+            if (!n) { alert('No records for: ' + cond); return; }
+            if (!confirm('Delete ' + n + ' record(s) for "' + cond + '"?')) return;
+            records = records.filter(r => r.face !== cond);
+            updateAll(); renderResetSummary();
+        }
 
-  <div class="summary-box">
-    <div style="font-weight:500;color:var(--color-text-primary);margin-bottom:8px;">Current data summary</div>
-    <div id="reset-summary">No records yet.</div>
-  </div>
-</div>
-</div>
+        function resetByPasskey() {
+            const cond = document.getElementById('reset-passkey').value;
+            const n = records.filter(r => r.passkey === cond).length;
+            if (!n) { alert('No records where passkey = ' + cond); return; }
+            if (!confirm('Delete ' + n + ' record(s) where passkey = "' + cond + '"?')) return;
+            records = records.filter(r => r.passkey !== cond);
+            updateAll(); renderResetSummary();
+        }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script>
-  
-let records = [];
-let cM, cCountry, cFace, cPasskey, cG, cI;
+        function resetCounter() {
+            document.getElementById('inp-testno').value = 1;
+            alert('Test counter reset to 1. Existing records are kept.');
+        }
 
-function showTab(name, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  if (el) el.classList.add('active');
-  if (name === 'charts') setTimeout(renderCharts, 50);
-  if (name === 'report') renderReport();
-  if (name === 'reset') renderResetSummary();
-}
+        function getMetrics() {
+            const TP = records.filter(r => r.cls === 'TP').length;
+            const TN = records.filter(r => r.cls === 'TN').length;
+            const FP = records.filter(r => r.cls === 'FP').length;
+            const FN = records.filter(r => r.cls === 'FN').length;
+            const total = TP + TN + FP + FN;
+            const genuine = TP + FN;
+            const impostor = TN + FP;
+            return {
+                TP, TN, FP, FN, total, genuine, impostor,
+                acc: total > 0 ? (TP + TN) / total * 100 : null,
+                far: impostor > 0 ? FP / impostor * 100 : null,
+                frr: genuine > 0 ? FN / genuine * 100 : null
+            };
+        }
 
-function updateHint() {
-  const t = document.getElementById('inp-type').value;
-  document.getElementById('type-hint').textContent = t === 'genuine'
-    ? "Genuine: use the real registered user's face"
-    : 'Impostor: use a different person, photo, or video';
-}
+        function colorCls(val, good, bad, lower) {
+            if (val === null) return '';
+            if (lower) return val <= good ? 'metric-good' : val <= bad ? 'metric-warn' : 'metric-bad';
+            return val >= good ? 'metric-good' : val >= bad ? 'metric-warn' : 'metric-bad';
+        }
 
-function classify(type, result) {
-  if (type === 'genuine'  && result === 'accepted') return 'TP';
-  if (type === 'genuine'  && result === 'rejected')  return 'FN';
-  if (type === 'impostor' && result === 'accepted') return 'FP';
-  return 'TN';
-}
-
-function addRecord() {
-  const testno  = parseInt(document.getElementById('inp-testno').value) || records.length + 1;
-  const user    = document.getElementById('inp-user').value.trim() || 'User';
-  const country = document.getElementById('inp-country').value;
-  const face    = document.getElementById('inp-face').value;
-  const passkey = document.getElementById('inp-passkey').value;
-  const type    = document.getElementById('inp-type').value;
-  const result  = document.getElementById('inp-result').value;
-  records.push({ testno, user, country, face, passkey, type, result, cls: classify(type, result) });
-  document.getElementById('inp-testno').value = testno + 1;
-  updateAll();
-}
-
-function deleteRecord(idx) { records.splice(idx, 1); updateAll(); }
-
-function resetAll() {
-  if (!confirm('Delete ALL records? This cannot be undone.')) return;
-  records = [];
-  document.getElementById('inp-testno').value = 1;
-  updateAll();
-  renderResetSummary();
-}
-
-function resetByType(type) {
-  const n = records.filter(r => r.type === type).length;
-  if (!n) { alert('No ' + type + ' records found.'); return; }
-  if (!confirm('Delete ' + n + ' ' + type + ' record(s)?')) return;
-  records = records.filter(r => r.type !== type);
-  updateAll(); renderResetSummary();
-}
-
-function resetByCountry() {
-  const cond = document.getElementById('reset-country').value;
-  const n = records.filter(r => r.country === cond).length;
-
-  if (!n) {
-      alert('No records for: ' + cond);
-      return;
-  }
-  if (!confirm('Delete ' + n + ' record(s) for "' + cond + '"?'))
-      return;
-  records = records.filter(r => r.country !== cond);
-  updateAll();
-  renderResetSummary();
-}
-
-function resetByFace() {
-  const cond = document.getElementById('reset-face').value;
-  const n = records.filter(r => r.face === cond).length;
-  if (!n) { alert('No records for: ' + cond); return; }
-  if (!confirm('Delete ' + n + ' record(s) for "' + cond + '"?')) return;
-  records = records.filter(r => r.face !== cond);
-  updateAll(); renderResetSummary();
-}
-
-function resetByPasskey() {
-  const cond = document.getElementById('reset-passkey').value;
-  const n = records.filter(r => r.passkey === cond).length;
-  if (!n) { alert('No records where passkey = ' + cond); return; }
-  if (!confirm('Delete ' + n + ' record(s) where passkey = "' + cond + '"?')) return;
-  records = records.filter(r => r.passkey !== cond);
-  updateAll(); renderResetSummary();
-}
-
-function resetCounter() {
-  document.getElementById('inp-testno').value = 1;
-  alert('Test counter reset to 1. Existing records are kept.');
-}
-
-function getMetrics() {
-  const TP = records.filter(r => r.cls === 'TP').length;
-  const TN = records.filter(r => r.cls === 'TN').length;
-  const FP = records.filter(r => r.cls === 'FP').length;
-  const FN = records.filter(r => r.cls === 'FN').length;
-  const total    = TP + TN + FP + FN;
-  const genuine  = TP + FN;
-  const impostor = TN + FP;
-  return {
-    TP, TN, FP, FN, total, genuine, impostor,
-    acc: total    > 0 ? (TP + TN) / total    * 100 : null,
-    far: impostor > 0 ? FP        / impostor  * 100 : null,
-    frr: genuine  > 0 ? FN        / genuine   * 100 : null
-  };
-}
-
-function colorCls(val, good, bad, lower) {
-  if (val === null) return '';
-  if (lower) return val <= good ? 'metric-good' : val <= bad ? 'metric-warn' : 'metric-bad';
-  return val >= good ? 'metric-good' : val >= bad ? 'metric-warn' : 'metric-bad';
-}
-
-function renderTable() {
-  const tbody = document.getElementById('result-tbody');
-  if (!records.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No records yet.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = records.map((r, i) => `
+        function renderTable() {
+            const tbody = document.getElementById('result-tbody');
+            if (!records.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No records yet.</td></tr>'; return; }
+            tbody.innerHTML = records.map((r, i) => `
     <tr>
-      <td>${r.testno}</td>
-      <td>${r.user}</td>
-      <td>${r.country}</td>
-      <td>${r.face}</td>
+      <td>${r.testno}</td><td>${r.user}</td><td>${r.country}</td><td>${r.face}</td>
       <td><span class="badge b-${r.passkey.toLowerCase()}">${r.passkey}</span></td>
       <td><span class="badge b-${r.type}">${r.type}</span></td>
       <td><span class="badge b-${r.result}">${r.result}</span></td>
       <td><span class="badge b-${r.cls.toLowerCase()}">${r.cls}</span></td>
-      <td><button class="btn-small" onclick="deleteRecord(${i})" aria-label="Delete record ${r.testno}"><i class="ti ti-trash" aria-hidden="true"></i></button></td>
+      <td><button class="btn-small" onclick="deleteRecord(${i})">🗑</button></td>
     </tr>`).join('');
-}
-
-function destroyChart(c) { if (c) { try { c.destroy(); } catch(e){} } }
-
-const FACE_CONDITIONS = ['None','Recognized','Unrecognized'];
-
-function renderCharts() {
-  const m = getMetrics();
-
-  destroyChart(cM);
-  cM = new Chart(document.getElementById('chart-metrics'), {
-    type: 'bar',
-    data: {
-      labels: ['Accuracy','FAR','FRR'],
-      datasets: [
-        { label: 'Actual', data: [m.acc!=null?+m.acc.toFixed(1):0, m.far!=null?+m.far.toFixed(1):0, m.frr!=null?+m.frr.toFixed(1):0], backgroundColor:['#1D9E75','#E24B4A','#BA7517'], borderRadius:4 },
-        { label: 'Target', data:[85,5,10], backgroundColor:['rgba(29,158,117,.2)','rgba(226,75,74,.2)','rgba(186,117,23,.2)'], borderRadius:4 }
-      ]
-    },
-    options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{legend:{display:true,position:'top'}},
-        scales:{
-            x:{stacked: false, ticks:{autoSkip:false,maxRotation:30}}, // stacked: false
-            y:{stacked: false, beginAtZero:true}                      // stacked: false
-        } 
-    }
-});
-
-const countryLabels =
-[
-  'Malaysia',
-  'Singapore',
-  'Indonesia',
-  'Thailand'
-].filter(
-  c => records.some(r => r.country === c)
-);
-
-destroyChart(cCountry);
-
-cCountry = new Chart(
-  document.getElementById('chart-country'),
-  {
-    type:'bar',
-    data:{
-      labels:
-        countryLabels.length
-        ? countryLabels
-        : ['No data'],
-
-      datasets:[
-        {
-          label:'Correct',
-          data: countryLabels.map(
-            c => records.filter(
-              r => r.country === c &&
-              (r.cls === 'TP' || r.cls === 'TN')
-            ).length
-          ),
-          backgroundColor:'#1D9E75',
-          borderRadius:4
-        },
-
-        {
-          label:'Wrong',
-          data: countryLabels.map(
-            c => records.filter(
-              r => r.country === c &&
-              (r.cls === 'FP' || r.cls === 'FN')
-            ).length
-          ),
-          backgroundColor:'#E24B4A',
-          borderRadius:4
         }
-      ]
-    },
 
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{
-          display:true,
-          position:'top'
+        function destroyChart(c) { if (c) { try { c.destroy(); } catch (e) { } } }
+
+        function renderCharts() {
+            const m = getMetrics();
+
+            // ── 1. Metrics vs target ──────────────────────────────────────────────────
+            destroyChart(cM);
+            cM = new Chart(document.getElementById('chart-metrics'), {
+                type: 'bar',
+                data: {
+                    labels: ['Accuracy', 'FAR', 'FRR'],
+                    datasets: [
+                        {
+                            label: 'Actual',
+                            data: [
+                                m.acc != null ? +m.acc.toFixed(1) : 0,
+                                m.far != null ? +m.far.toFixed(1) : 0,
+                                m.frr != null ? +m.frr.toFixed(1) : 0
+                            ],
+                            backgroundColor: ['#1D9E75', '#E24B4A', '#BA7517'],
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Target',
+                            data: [85, 5, 10],
+                            backgroundColor: ['rgba(29,158,117,.25)', 'rgba(226,75,74,.25)', 'rgba(186,117,23,.25)'],
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 24 } },
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        datalabels: {
+                            ...METRICS_DATALABELS,
+                            // warna ikut dataset
+                            color: ctx => ctx.datasetIndex === 0 ? '#1e293b' : '#64748b',
+                            font: ctx => ({ weight: '700', size: ctx.datasetIndex === 0 ? 13 : 11 })
+                        }
+                    },
+                    scales: {
+                        x: { stacked: false, ticks: { autoSkip: false, maxRotation: 30 } },
+                        y: { stacked: false, beginAtZero: true, max: 110 }
+                    }
+                }
+            });
+
+            // ── 2. By Country ─────────────────────────────────────────────────────────
+            const countryLabels = ['Malaysia', 'Singapore', 'Indonesia', 'Thailand']
+                .filter(c => records.some(r => r.country === c));
+
+            destroyChart(cCountry);
+            cCountry = new Chart(document.getElementById('chart-country'), {
+                type: 'bar',
+                data: {
+                    labels: countryLabels.length ? countryLabels : ['No data'],
+                    datasets: [
+                        {
+                            label: 'Correct',
+                            data: countryLabels.map(c => records.filter(r => r.country === c && (r.cls === 'TP' || r.cls === 'TN')).length),
+                            backgroundColor: '#1D9E75', borderRadius: 4
+                        },
+                        {
+                            label: 'Wrong',
+                            data: countryLabels.map(c => records.filter(r => r.country === c && (r.cls === 'FP' || r.cls === 'FN')).length),
+                            backgroundColor: '#E24B4A', borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 24 } },
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        datalabels: BAR_DATALABELS
+                    },
+                    scales: {
+                        x: { stacked: false, ticks: { autoSkip: false, maxRotation: 30 } },
+                        y: { stacked: false, beginAtZero: true }
+                    }
+                }
+            });
+
+            // ── 3. By Face condition ──────────────────────────────────────────────────
+            const faceLabels = FACE_CONDITIONS.filter(c => records.some(r => r.face === c));
+
+            destroyChart(cFace);
+            cFace = new Chart(document.getElementById('chart-face'), {
+                type: 'bar',
+                data: {
+                    labels: faceLabels.length ? faceLabels : ['No data'],
+                    datasets: [
+                        {
+                            label: 'Correct',
+                            data: faceLabels.map(c => records.filter(r => r.face === c && (r.cls === 'TP' || r.cls === 'TN')).length),
+                            backgroundColor: '#1D9E75', borderRadius: 4
+                        },
+                        {
+                            label: 'Wrong',
+                            data: faceLabels.map(c => records.filter(r => r.face === c && (r.cls === 'FP' || r.cls === 'FN')).length),
+                            backgroundColor: '#E24B4A', borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 24 } },
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        datalabels: BAR_DATALABELS
+                    },
+                    scales: {
+                        x: { stacked: false, ticks: { autoSkip: false, maxRotation: 30 } },
+                        y: { stacked: false, beginAtZero: true }
+                    }
+                }
+            });
+
+            // ── 4. By Passkey ─────────────────────────────────────────────────────────
+            const pkLabels = ['None', 'Accepted', 'Rejected'];
+
+            destroyChart(cPasskey);
+            cPasskey = new Chart(document.getElementById('chart-passkey'), {
+                type: 'bar',
+                data: {
+                    labels: pkLabels,
+                    datasets: [
+                        {
+                            label: 'Correct',
+                            data: pkLabels.map(c => records.filter(r => r.passkey === c && (r.cls === 'TP' || r.cls === 'TN')).length),
+                            backgroundColor: '#1D9E75', borderRadius: 4
+                        },
+                        {
+                            label: 'Wrong',
+                            data: pkLabels.map(c => records.filter(r => r.passkey === c && (r.cls === 'FP' || r.cls === 'FN')).length),
+                            backgroundColor: '#E24B4A', borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    layout: { padding: { top: 24 } },
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        datalabels: BAR_DATALABELS
+                    },
+                    scales: {
+                        x: { stacked: false },
+                        y: { stacked: false, beginAtZero: true }
+                    }
+                }
+            });
+
+            // ── 5. Doughnut: Genuine ──────────────────────────────────────────────────
+            destroyChart(cG);
+            cG = new Chart(document.getElementById('chart-genuine'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['TP (accepted)', 'FN (rejected)'],
+                    datasets: [{ data: [m.TP, m.FN], backgroundColor: ['#1D9E75', '#BA7517'] }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { font: { size: 11 } } },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: '700', size: 13 },
+                            formatter: v => v === 0 ? '' : v
+                        }
+                    }
+                }
+            });
+
+            // ── 6. Doughnut: Impostor ────────────────────────────────────────────────
+            destroyChart(cI);
+            cI = new Chart(document.getElementById('chart-impostor'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['FP (accepted)', 'TN (rejected)'],
+                    datasets: [{ data: [m.FP, m.TN], backgroundColor: ['#E24B4A', '#185FA5'] }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { font: { size: 11 } } },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: '700', size: 13 },
+                            formatter: v => v === 0 ? '' : v
+                        }
+                    }
+                }
+            });
         }
-      },
-      scales:{
-        x:{
-          stacked:false,
-          ticks:{
-            autoSkip:false,
-            maxRotation:30
-          }
-        },
-        y:{
-          stacked:false,
-          beginAtZero:true
+
+        function sBadge(val, good, bad, lower) {
+            if (val === null) return '<span class="badge b-na">N/A</span>';
+            const ok = lower ? val <= good : val >= good;
+            const warn = lower ? val <= bad : val >= bad;
+            if (ok) return '<span class="badge b-good">Good</span>';
+            if (warn) return '<span class="badge b-fair">Fair</span>';
+            return '<span class="badge b-poor">Poor</span>';
         }
-      }
-    }
-  }
-);
 
-  const faceLabels = FACE_CONDITIONS.filter(c => records.some(r => r.face === c));
-// ... dalam fungsi renderCharts()
-destroyChart(cFace);
-cFace = new Chart(document.getElementById('chart-face'), {
-    type:'bar',
-    data:{
-        labels: faceLabels.length ? faceLabels : ['No data'],
-        datasets:[
-            { label:'Correct', data: faceLabels.map(c=>records.filter(r=>r.face===c&&(r.cls==='TP'||r.cls==='TN')).length), backgroundColor:'#1D9E75', borderRadius:4 },
-            { label:'Wrong',   data: faceLabels.map(c=>records.filter(r=>r.face===c&&(r.cls==='FP'||r.cls==='FN')).length), backgroundColor:'#E24B4A', borderRadius:4 }
-        ]
-    },
-    // UBAH DI SINI:
-    options:{ 
-        responsive:true, 
-        maintainAspectRatio:false, 
-        plugins:{legend:{display:true,position:'top'}}, 
-        scales:{
-            x:{stacked: false, ticks:{autoSkip:false,maxRotation:30}}, // stacked: false
-            y:{stacked: false, beginAtZero:true}                      // stacked: false
-        } 
-    }
-});
+        function condTable(rows, tbodyId) {
+            const tbody = document.getElementById(tbodyId);
+            if (!rows.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No data yet.</td></tr>'; return; }
+            tbody.innerHTML = rows.map(([cond, total, correct]) => {
+                const wrong = total - correct;
+                return `<tr><td>${cond}</td><td>${total}</td><td>${correct}</td><td>${wrong}</td><td>${total > 0 ? (correct / total * 100).toFixed(1) + '%' : '—'}</td></tr>`;
+            }).join('');
+        }
 
-  const pkLabels = ['None','Accepted','Rejected'];
-// ... dalam fungsi renderCharts()
-destroyChart(cPasskey);
-cPasskey = new Chart(document.getElementById('chart-passkey'), {
-    type:'bar',
-    data:{
-        labels: pkLabels,
-        datasets:[
-            { label:'Correct', data: pkLabels.map(c=>records.filter(r=>r.passkey===c&&(r.cls==='TP'||r.cls==='TN')).length), backgroundColor:'#1D9E75', borderRadius:4 },
-            { label:'Wrong',   data: pkLabels.map(c=>records.filter(r=>r.passkey===c&&(r.cls==='FP'||r.cls==='FN')).length), backgroundColor:'#E24B4A', borderRadius:4 }
-        ]
-    },
-    // UBAH DI SINI:
-    options:{ 
-        responsive:true, 
-        maintainAspectRatio:false, 
-        plugins:{legend:{display:true,position:'top'}}, 
-        scales:{
-            x:{stacked: false}, // stacked: false
-            y:{stacked: false, beginAtZero:true} // stacked: false
-        } 
-    }
-});
+        function renderReport() {
+            const m = getMetrics();
+            const rb = document.getElementById('report-tbody');
+            if (!m.total) {
+                rb.innerHTML = '<tr><td colspan="5" class="empty-state">No data yet.</td></tr>';
+                ['country-cond-tbody', 'face-cond-tbody', 'passkey-tbody'].forEach(id => {
+                    document.getElementById(id).innerHTML = '<tr><td colspan="5" class="empty-state">No data yet.</td></tr>';
+                });
+                return;
+            }
+            rb.innerHTML = [
+                ['Accuracy', '(TP+TN)/(TP+TN+FP+FN)', m.acc != null ? m.acc.toFixed(2) + '%' : '—', '&gt; 85%', sBadge(m.acc, 85, 70, false)],
+                ['FAR', 'FP / (FP+TN)', m.far != null ? m.far.toFixed(2) + '%' : '—', '&lt; 5%', sBadge(m.far, 5, 10, true)],
+                ['FRR', 'FN / (FN+TP)', m.frr != null ? m.frr.toFixed(2) + '%' : '—', '&lt; 10%', sBadge(m.frr, 10, 20, true)],
+                ['Total attempts', 'TP+TN+FP+FN', m.total, '—', '—'],
+                ['True Positive (TP)', 'Genuine accepted', m.TP, '—', '—'],
+                ['True Negative (TN)', 'Impostor rejected', m.TN, '—', '—'],
+                ['False Positive (FP)', 'Impostor accepted', m.FP, '—', '—'],
+                ['False Negative (FN)', 'Genuine rejected', m.FN, '—', '—'],
+            ].map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('');
 
-  destroyChart(cG);
-  cG = new Chart(document.getElementById('chart-genuine'), {
-    type:'doughnut',
-    data:{ labels:['TP (accepted)','FN (rejected)'], datasets:[{data:[m.TP,m.FN],backgroundColor:['#1D9E75','#BA7517']}] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11}}}} }
-  });
+            const countryConds = [...new Set(records.map(r => r.country))];
+            condTable(
+                countryConds.map(c => [c, records.filter(r => r.country === c).length,
+                    records.filter(r => r.country === c && (r.cls === 'TP' || r.cls === 'TN')).length]),
+                'country-cond-tbody'
+            );
 
-  destroyChart(cI);
-  cI = new Chart(document.getElementById('chart-impostor'), {
-    type:'doughnut',
-    data:{ labels:['FP (accepted)','TN (rejected)'], datasets:[{data:[m.FP,m.TN],backgroundColor:['#E24B4A','#185FA5']}] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:true,position:'bottom',labels:{font:{size:11}}}} }
-  });
-}
+            const faceConds = FACE_CONDITIONS.filter(c => records.some(r => r.face === c));
+            condTable(
+                faceConds.map(c => [c, records.filter(r => r.face === c).length,
+                    records.filter(r => r.face === c && (r.cls === 'TP' || r.cls === 'TN')).length]),
+                'face-cond-tbody'
+            );
 
-function sBadge(val, good, bad, lower) {
-  if (val === null) return '<span class="badge b-na">N/A</span>';
-  const ok = lower ? val <= good : val >= good;
-  const warn = lower ? val <= bad : val >= bad;
-  if (ok)   return '<span class="badge b-good">Good</span>';
-  if (warn) return '<span class="badge b-fair">Fair</span>';
-  return '<span class="badge b-poor">Poor</span>';
-}
+            condTable(
+                ['None', 'Accepted', 'Rejected'].map(c => [c, records.filter(r => r.passkey === c).length,
+                    records.filter(r => r.passkey === c && (r.cls === 'TP' || r.cls === 'TN')).length]),
+                'passkey-tbody'
+            );
+        }
 
-function condTable(rows, tbodyId, colLabel) {
-  const tbody = document.getElementById(tbodyId);
-  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No data yet.</td></tr>'; return; }
-  tbody.innerHTML = rows.map(([cond,total,correct]) => {
-    const wrong = total - correct;
-    return `<tr><td>${cond}</td><td>${total}</td><td>${correct}</td><td>${wrong}</td><td>${total>0?(correct/total*100).toFixed(1)+'%':'—'}</td></tr>`;
-  }).join('');
-}
+        function renderResetSummary() {
+            const m = getMetrics();
+            const el = document.getElementById('reset-summary');
+            if (!m.total) { el.textContent = 'No records yet.'; return; }
+            const faceTested = [...new Set(records.map(r => r.face))];
+            const countriesTested = [...new Set(records.map(r => r.country))];
+            el.innerHTML = `Total records: <strong>${m.total}</strong> &nbsp;|&nbsp; Genuine: <strong>${m.genuine}</strong> &nbsp;|&nbsp; Impostor: <strong>${m.impostor}</strong><br>Countries tested: <strong>${countriesTested.join(', ') || '—'}</strong><br>Face conditions tested: <strong>${faceTested.join(', ') || '—'}</strong>`;
+        }
 
-function renderReport() {
-  const m = getMetrics();
-  const rb = document.getElementById('report-tbody');
-  if (!m.total) {
-    rb.innerHTML = '<tr><td colspan="5" class="empty-state">No data yet.</td></tr>';
-    ['country-cond-tbody','face-cond-tbody','passkey-tbody'].forEach(id=>{document.getElementById(id).innerHTML='<tr><td colspan="5" class="empty-state">No data yet.</td></tr>';});
-    return;
-  }
-  rb.innerHTML = [
-    ['Accuracy','(TP+TN)/(TP+TN+FP+FN)', m.acc!=null?m.acc.toFixed(2)+'%':'—','&gt; 85%', sBadge(m.acc,85,70,false)],
-    ['FAR','FP / (FP+TN)',               m.far!=null?m.far.toFixed(2)+'%':'—','&lt; 5%',  sBadge(m.far,5,10,true)],
-    ['FRR','FN / (FN+TP)',               m.frr!=null?m.frr.toFixed(2)+'%':'—','&lt; 10%', sBadge(m.frr,10,20,true)],
-    ['Total attempts','TP+TN+FP+FN',     m.total,'—','—'],
-    ['True Positive (TP)','Genuine accepted',   m.TP,'—','—'],
-    ['True Negative (TN)','Impostor rejected',  m.TN,'—','—'],
-    ['False Positive (FP)','Impostor accepted', m.FP,'—','—'],
-    ['False Negative (FN)','Genuine rejected',  m.FN,'—','—'],
-  ].map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('');
+        async function generateFullPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('p', 'mm', 'a4');
+            const tabsToCapture = ['tab-report', 'tab-charts', 'tab-results'];
+            const originalStyles = tabsToCapture.map(id => document.getElementById(id).style.display);
+            tabsToCapture.forEach(id => { document.getElementById(id).style.display = 'block'; });
+            doc.setFontSize(18);
+            doc.text("Face Authentication Research Report", 10, 15);
+            doc.setFontSize(10);
+            doc.text("Generated: " + new Date().toLocaleString(), 10, 22);
+            for (let i = 0; i < tabsToCapture.length; i++) {
+                const el = document.getElementById(tabsToCapture[i]);
+                const canvas = await html2canvas(el, { scale: 1.5, logging: false });
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 190;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                if (i > 0) doc.addPage();
+                doc.addImage(imgData, 'PNG', 10, 30, imgWidth, imgHeight);
+            }
+            tabsToCapture.forEach((id, index) => { document.getElementById(id).style.display = originalStyles[index]; });
+            showTab('report', document.querySelectorAll('.tab')[3]);
+            doc.save("Research_Full_Report.pdf");
+        }
 
-  const countryConds =[...new Set(records.map(r => r.country))];
-condTable(
-    countryConds.map(c => [c,records.filter(r=>r.country===c).length,records.filter(
-      r=>r.country===c && (r.cls==='TP'||r.cls==='TN')).length]),'country-cond-tbody'
-);
-  
-  const faceConds = FACE_CONDITIONS.filter(c => records.some(r => r.face === c));
-  condTable(
-    faceConds.map(c => [c, records.filter(r=>r.face===c).length, records.filter(r=>r.face===c&&(r.cls==='TP'||r.cls==='TN')).length]),
-    'face-cond-tbody', 'Condition'
-  );
-  condTable(
-    ['None','Accepted','Rejected'].map(c => [c, records.filter(r=>r.passkey===c).length, records.filter(r=>r.passkey===c&&(r.cls==='TP'||r.cls==='TN')).length]),
-    'passkey-tbody', 'Passkey'
-  );
-}
+        function updateAll() {
+            const m = getMetrics();
+            ['tp', 'tn', 'fp', 'fn'].forEach(k => document.getElementById('cm-' + k).textContent = m[k.toUpperCase()]);
+            document.getElementById('m-total').textContent = m.total;
+            document.getElementById('m-genuine').textContent = m.genuine;
+            document.getElementById('m-impostor').textContent = m.impostor;
+            const aEl = document.getElementById('m-acc');
+            aEl.textContent = m.acc !== null ? m.acc.toFixed(1) + '%' : '—';
+            aEl.className = 'metric-value ' + colorCls(m.acc, 85, 70, false);
+            const farEl = document.getElementById('m-far');
+            farEl.textContent = m.far !== null ? m.far.toFixed(1) + '%' : '—';
+            farEl.className = 'metric-value ' + colorCls(m.far, 5, 10, true);
+            const frrEl = document.getElementById('m-frr');
+            frrEl.textContent = m.frr !== null ? m.frr.toFixed(1) + '%' : '—';
+            frrEl.className = 'metric-value ' + colorCls(m.frr, 10, 20, true);
+            renderTable();
+            renderReport();
+            renderResetSummary();
+        }
+        updateAll();
+    </script>
+</body>
 
-function renderResetSummary() {
-  const m = getMetrics();
-  const el = document.getElementById('reset-summary');
-  if (!m.total) { el.textContent = 'No records yet.'; return; }
-  const faceTested =[...new Set(records.map(r => r.face))];
-
-const countriesTested =[...new Set(records.map(r => r.country))];
-
-el.innerHTML =
-`
-Total records:
-<strong>${m.total}</strong>
-
-&nbsp;|&nbsp;
-
-Genuine:
-<strong>${m.genuine}</strong>
-
-&nbsp;|&nbsp;
-
-Impostor:
-<strong>${m.impostor}</strong>
-
-<br>
-
-Countries tested:
-<strong>${countriesTested.join(', ') || '—'}</strong>
-
-<br>
-
-Face conditions tested:
-<strong>${faceTested.join(', ') || '—'}</strong>
-`;
-}
-
-async function generateFullPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    const tabsToCapture = ['tab-report', 'tab-charts', 'tab-results'];
-    
-    // 1. Simpan state asal supaya kita boleh kembalikan nanti
-    const originalStyles = tabsToCapture.map(id => document.getElementById(id).style.display);
-    
-    // 2. Paksa semua tab untuk muncul (display: block) supaya html2canvas boleh baca
-    tabsToCapture.forEach(id => {
-        document.getElementById(id).style.display = 'block';
-    });
-
-    doc.setFontSize(18);
-    doc.text("Face Authentication Research Report", 10, 15);
-    doc.setFontSize(10);
-    doc.text("Dijana pada: " + new Date().toLocaleString(), 10, 22);
-
-    for (let i = 0; i < tabsToCapture.length; i++) {
-        const el = document.getElementById(tabsToCapture[i]);
-        
-        // Capture elemen
-        const canvas = await html2canvas(el, { scale: 1.5, logging: false });
-        const imgData = canvas.toDataURL('image/png');
-        
-        const imgWidth = 190;
-        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-        
-        if (i > 0) doc.addPage();
-        doc.addImage(imgData, 'PNG', 10, 30, imgWidth, imgHeight);
-    }
-
-    // 3. Kembalikan display kepada asal
-    tabsToCapture.forEach((id, index) => {
-        document.getElementById(id).style.display = originalStyles[index];
-    });
-    
-    // Pastikan tab asal yang aktif sahaja yang kelihatan
-    showTab('report', document.querySelector('.tab')[3]); 
-    
-    doc.save("Research_Full_Report.pdf");
-}
-function updateAll() {
-
-  const m = getMetrics();
-
-  ['tp','tn','fp','fn'].forEach(
-    k => document.getElementById('cm-'+k).textContent =
-    m[k.toUpperCase()]
-  );
-
-  document.getElementById('m-total').textContent = m.total;
-  document.getElementById('m-genuine').textContent = m.genuine;
-  document.getElementById('m-impostor').textContent = m.impostor;
-
-  const aEl = document.getElementById('m-acc');
-  aEl.textContent = m.acc !== null
-      ? m.acc.toFixed(1) + '%'
-      : '—';
-
-  aEl.className =
-      'metric-value ' +
-      colorCls(m.acc,85,70,false);
-
-  const farEl = document.getElementById('m-far');
-
-  farEl.textContent = m.far !== null
-      ? m.far.toFixed(1) + '%'
-      : '—';
-
-  farEl.className =
-      'metric-value ' +
-      colorCls(m.far,5,10,true);
-
-  const frrEl = document.getElementById('m-frr');
-
-  frrEl.textContent = m.frr !== null
-      ? m.frr.toFixed(1) + '%'
-      : '—';
-
-  frrEl.className =
-      'metric-value ' +
-      colorCls(m.frr,10,20,true);
-
-  renderTable();
-  renderReport();
-  renderResetSummary();
-}
-updateAll();
-</script>
+</html>
